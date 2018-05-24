@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>1.html</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="http://localhost:8080/socket.io/socket.io.js"></script>
+    <style>
+        .mine{
+            color:green;
+        }
+    </style>
+</head>
+<body>
+   名 字：<input type="text" id="user"/><br>
+   密 码：<input type="password" id="pass"><br>
+   <input type="button" value="注册" id="btn1"> <input type="button" value="登录" id="btn2">
+   <hr>
+    <textarea name="" id="txt1" cols="80" rows="10"></textarea>
+    <input type="button" value="发送" id="btn_send">
+    <ul id="ul1">
+        <!-- <li>
+            <h3></h3>
+            <p></p>
+        </li> -->
+    </ul>
+    <script>
+        let sock=io.connect('ws://localhost:8080/');
+
+        window.onload=function(){
+            let cur_username='';
+
+            let oBtn1=document.getElementById('btn1');
+            let oBtn2=document.getElementById('btn2');
+            let oBtnSend=document.getElementById('btn_send');
+            let oUser=document.getElementById('user');
+            let oPass=document.getElementById('pass');
+            let oTxt=document.getElementById('txt1');
+            let oUl=document.getElementById('ul1');
+
+            //注册
+            oBtn1.onclick=function(){
+                sock.emit('reg',oUser.value,oPass.value);
+            }
+            sock.on('reg_ret',(code,msg)=>{
+                if(code){
+                    alert(msg);
+                }else{
+                    alert(msg);
+                }
+            })
+
+            // 登录
+            oBtn2.onclick=function(){
+                sock.emit('login',oUser.value,oPass.value);
+            }
+            sock.on('login_ret',(code,msg)=>{
+                if(code){
+                    alert(msg);
+                }else{
+                    // 成功
+                    cur_username=oUser.value
+                    alert(msg);
+                }
+            })
+
+            // 发言
+            oBtnSend.onclick=function(){
+                sock.emit('msg',oTxt.value);
+            }
+
+            //接收别人的消息
+            sock.on('msg',(name,txt)=>{
+                let oli=document.createElement('li');
+                oli.innerHTML='<h3>'+name+'</h3><p>'+txt+'</p>';
+                oUl.appendChild(oli);
+            })
+            //接收自己的消息
+            sock.on('msg_ret',(code,msg)=>{
+                if(code){
+                    alert('发送失败：'+msg);
+                }else{
+                    // alert('发送成功：'+msg);
+                    let oli=document.createElement('li');
+                    oli.className='mine'
+
+                    oli.innerHTML='<h3>'+cur_username+'</h3><p>'+oTxt.value+'</p>';
+
+                    oUl.appendChild(oli);
+                    oTxt.value='';
+                }
+            })
+        }
+
+       
+    </script>
+</body>
+</html>
